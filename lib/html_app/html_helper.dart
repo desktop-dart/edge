@@ -1,6 +1,7 @@
 import 'dart:html';
 
 import '../virtual/virtual.dart';
+import 'html_app.dart';
 
 class HtmlHelper {
   static void setElementProp(Element element, String name, value, [oldValue]) {

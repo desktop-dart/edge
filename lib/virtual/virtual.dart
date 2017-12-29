@@ -1,62 +1,64 @@
 import 'dart:async';
 
 /// Reactor function for an output event
-typedef FutureOr OutputReactor<ED>(App updater, ED eventData);
+typedef FutureOr OutputReactor<ED>(ViewUpdater updater, ED eventData);
 
-abstract class App {
-  Future updateView();
+abstract class ViewUpdater {
+  void updateView();
 }
 
-abstract class VElement {
-  String tagName;
+abstract class VNode {
+  String get key;
 
-  String key;
+  String get tagName;
 
   Map<String, dynamic> get properties;
-
-  List<VElement> get children;
 
   Map<String, OutputReactor> get reactors;
 }
 
-class VElementImpl implements VElement {
-  String tagName;
+abstract class VElement implements VNode {
+  List<VNode> get children;
+}
 
+class VHtmlElementTag implements VElement {
   String key;
+
+  String tagName;
 
   final Map<String, dynamic> properties;
 
-  final List<VElement> children;
-
   final Map<String, OutputReactor> reactors;
 
-  VElementImpl(this.tagName,
+  final List<VNode> children;
+
+  VHtmlElementTag(this.tagName,
       {this.key,
       Map<String, dynamic> properties,
-      List<VElement> children,
+      List<VNode> children,
       Map<String, OutputReactor> reactors})
       : properties = properties ?? {},
         children = children ?? [],
         reactors = reactors ?? {};
 }
 
-VElement vel(String tagName,
+VElement tag(String tagName,
         {String key,
         Map<String, dynamic> properties,
-        List<VElement> children,
+        List<VNode> children,
         Map<String, OutputReactor> reactors}) =>
-    new VElementImpl(tagName,
+    new VHtmlElementTag(tagName,
         key: key,
         properties: properties,
         children: children,
         reactors: reactors);
 
-abstract class Component {
-  Stream get onUpdate;
+typedef VNode RenderFunc();
 
-  VElement render();
+abstract class Component {
+  VNode render();
 }
 
-class ComponentCreator {
-
+abstract class RenderedComponent implements ViewUpdater {
+  Future updateView();
 }
