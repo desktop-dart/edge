@@ -1,0 +1,9 @@
+.edge-box-main {
+    border: 1px solid gray;
+}
+
+.edge-box-title {
+    padding: 5px;
+    background: #d0d0d0;
+    font-weight: bold;
+}

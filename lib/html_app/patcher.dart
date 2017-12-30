@@ -24,16 +24,39 @@ class HtmlRenderer {
   }
 
   void _updateElement(Element element, VNode oldVElement, VNode newVElement) {
-    final Map<String, dynamic> oldProps = oldVElement.properties;
+    // Properties/attributes
+    {
+      final Map<String, dynamic> oldProps = oldVElement.properties;
 
-    // TODO remove old properties
+      // TODO remove old properties
 
-    // Set new properties
-    for (String name in newVElement.properties.keys) {
-      final value = newVElement.properties[name];
-      if (!oldProps.containsKey(name) || value != oldProps[name]) {
-        HtmlHelper.setElementProp(element, name, value, oldProps[name]);
+      // Set new properties
+      for (String name in newVElement.properties.keys) {
+        final value = newVElement.properties[name];
+        if (!oldProps.containsKey(name) || value != oldProps[name]) {
+          HtmlHelper.setElementProp(element, name, value.toString());
+        }
       }
+    }
+
+    // Styles
+    {
+      final Map<String, dynamic> oldStyles = oldVElement.styles;
+
+      // TODO remove old styles
+
+      // Set new properties
+      for (String name in newVElement.styles.keys) {
+        final value = newVElement.styles[name];
+        if (!oldStyles.containsKey(name) || value != oldStyles[name]) {
+          HtmlHelper.setElementStyle(element, name, value.toString());
+        }
+      }
+    }
+
+    // Classes
+    {
+      // TODO
     }
   }
 
@@ -138,7 +161,8 @@ class HtmlRenderer {
       // Identical. Nothing to patch!
       newElement = oldElement;
     } else if (newVElement is VMountable) {
-      newElement = newVElement.mountAt(parent, oldElement, oldVElement);
+      newElement =
+          newVElement.mountAt(updateRequester, parent, oldElement, oldVElement);
     } else if (oldVElement == null) {
       newElement =
           parent.insertBefore(_createElement(parent, newVElement), oldElement);

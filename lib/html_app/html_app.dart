@@ -1,14 +1,11 @@
 library jaguar.html.app;
 
-import 'dart:async';
 import 'dart:html';
 
 import '../virtual/virtual.dart';
 import 'html_helper.dart';
 
 part 'patcher.dart';
-
-
 
 class HtmlApp implements ViewUpdater {
   RenderFunc _viewRenderer;
@@ -28,13 +25,17 @@ class HtmlApp implements ViewUpdater {
   VNode _rootVElement;
 
   @override
-  void updateView() {
+  void updateApp() {
     final VNode oldVElement = _rootVElement;
     _rootVElement = _viewRenderer();
     _element = _patcher.patch(_root, _element, oldVElement, _rootVElement);
   }
 
-  void start() => updateView();
+  void updateComponent() => updateApp();
+
+  void updateParent() => updateApp();
+
+  void start() => updateApp();
 }
 
 HtmlApp start(RenderFunc viewRenderer, {Element root}) =>
@@ -50,20 +51,30 @@ class _ElementPair {
 }
 
 class VMountable implements VNode, ViewUpdater {
-  final HtmlRenderer renderer;
+  HtmlRenderer _renderer;
 
   final Component component;
 
-  VMountable(this.component, this.renderer) {
-    renderer.updateRequester = this;
+  VMountable(this.component) {
+    _renderer = new HtmlRenderer(this);
     _rootVElement = component.render();
   }
+
+  String get id => _rootVElement.id;
+
+  set id(String v) => _rootVElement.id = id;
+
+  String get clas => _rootVElement.clas;
+
+  set clas(String v) => _rootVElement.clas = clas;
 
   String get key => _rootVElement.key;
 
   String get tagName => _rootVElement.tagName;
 
   Map<String, dynamic> get properties => _rootVElement.properties;
+
+  Map<String, dynamic> get styles => _rootVElement.styles;
 
   Map<String, OutputReactor> get reactors => _rootVElement.reactors;
 
@@ -73,25 +84,32 @@ class VMountable implements VNode, ViewUpdater {
 
   VElement _rootVElement;
 
-  Element mountAt(Element parent, Element oldElement, VNode oldVElement) {
+  ViewUpdater _parentComp;
+
+  Element mountAt(
+      ViewUpdater app, Element parent, Element oldElement, VNode oldVElement) {
+    _parentComp = app;
     _root = parent;
     _rootVElement = component.render();
-    _element = renderer.patch(_root, oldElement, oldVElement, _rootVElement);
+    _element = _renderer.patch(_root, oldElement, oldVElement, _rootVElement);
     return _element;
   }
 
   @override
-  void updateView() {
-    if(_root == null) {
+  void updateApp() => _parentComp?.updateParent();
+
+  void updateComponent() {
+    if (_root == null) {
       // TODO throw?
       return;
     }
 
     final VNode oldVElement = _rootVElement;
     _rootVElement = component.render();
-    _element = renderer.patch(_root, _element, oldVElement, _rootVElement);
+    _element = _renderer.patch(_root, _element, oldVElement, _rootVElement);
   }
+
+  void updateParent() => _parentComp?.updateComponent();
 }
 
-VMountable mount(Component component) =>
-    new VMountable(component, new HtmlRenderer());
+VMountable mount(Component component) => new VMountable(component);

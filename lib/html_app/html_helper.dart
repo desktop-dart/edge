@@ -1,10 +1,9 @@
 import 'dart:html';
 
 import '../virtual/virtual.dart';
-import 'html_app.dart';
 
 class HtmlHelper {
-  static void setElementProp(Element element, String name, value, [oldValue]) {
+  static void setElementProp(Element element, String name, String value) {
     if (name == 'text') {
       value = value.toString();
       if (element.innerHtml != value) {
@@ -18,7 +17,13 @@ class HtmlHelper {
     }
   }
 
-  static Element createElement(VElement vElement) {
+  static void setElementStyle(Element element, String name, String value) {
+    if (element.getComputedStyle().getPropertyValue(name) != value) {
+      element.style.setProperty(name, value);
+    }
+  }
+
+  static Element createElement(VNode vElement) {
     bool isSvg = false; // TODO
 
     Element ret;
@@ -31,10 +36,16 @@ class HtmlHelper {
     }
 
     for (String name in vElement.properties.keys) {
-      setElementProp(ret, name, vElement.properties[name]);
+      setElementProp(ret, name, vElement.properties[name].toString());
     }
 
-    // TODO update styles
+    if (vElement.id != null) ret.id = vElement.id;
+    if (vElement.clas != null && vElement.clas.isNotEmpty)
+      ret.classes.addAll(vElement.clas.split(' '));
+
+    for (String name in vElement.styles.keys) {
+      ret.style.setProperty(name, vElement.styles[name].toString());
+    }
 
     return ret;
   }

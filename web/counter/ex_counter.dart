@@ -18,7 +18,7 @@ void main() {
           }, reactors: {
             'click': (ViewUpdater updater, _) {
               count++;
-              updater.updateView();
+              updater.updateApp();
             },
           }),
         ],
